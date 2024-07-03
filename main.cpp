@@ -37,6 +37,7 @@ using namespace mxgui;
 
 ENTRY()
 {
+    //commento"
     Display& display = DisplayManager::instance().getDisplay();
     unsigned short maxX = display.getWidth() - 1;
     unsigned short maxY = display.getHeight() - 1;
