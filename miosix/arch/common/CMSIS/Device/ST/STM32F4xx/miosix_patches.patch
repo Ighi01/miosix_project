@@ -1,0 +1,276 @@
+diff -Naur Include.orig/stm32f401xc.h Include/stm32f401xc.h
+--- Include.orig/stm32f401xc.h	2023-11-08 11:17:42
++++ Include/stm32f401xc.h	2024-01-09 15:17:51
+@@ -136,7 +136,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f401xe.h Include/stm32f401xe.h
+--- Include.orig/stm32f401xe.h	2023-11-08 11:17:42
++++ Include/stm32f401xe.h	2024-01-09 15:17:51
+@@ -136,7 +136,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f405xx.h Include/stm32f405xx.h
+--- Include.orig/stm32f405xx.h	2023-11-08 11:17:42
++++ Include/stm32f405xx.h	2024-01-09 15:17:51
+@@ -160,7 +160,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f407xx.h Include/stm32f407xx.h
+--- Include.orig/stm32f407xx.h	2023-11-08 11:17:42
++++ Include/stm32f407xx.h	2024-01-09 15:17:51
+@@ -163,7 +163,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f410cx.h Include/stm32f410cx.h
+--- Include.orig/stm32f410cx.h	2023-11-08 11:17:42
++++ Include/stm32f410cx.h	2024-01-09 15:17:51
+@@ -132,7 +132,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f410rx.h Include/stm32f410rx.h
+--- Include.orig/stm32f410rx.h	2023-11-08 11:17:42
++++ Include/stm32f410rx.h	2024-01-09 15:17:51
+@@ -132,7 +132,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f410tx.h Include/stm32f410tx.h
+--- Include.orig/stm32f410tx.h	2023-11-08 11:17:42
++++ Include/stm32f410tx.h	2024-01-09 15:17:51
+@@ -129,7 +129,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f411xe.h Include/stm32f411xe.h
+--- Include.orig/stm32f411xe.h	2023-11-08 11:17:42
++++ Include/stm32f411xe.h	2024-01-09 15:17:51
+@@ -137,7 +137,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f412cx.h Include/stm32f412cx.h
+--- Include.orig/stm32f412cx.h	2023-11-08 11:17:42
++++ Include/stm32f412cx.h	2024-01-09 15:17:51
+@@ -157,7 +157,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f412rx.h Include/stm32f412rx.h
+--- Include.orig/stm32f412rx.h	2023-11-08 11:17:42
++++ Include/stm32f412rx.h	2024-01-09 15:17:51
+@@ -158,7 +158,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f412vx.h Include/stm32f412vx.h
+--- Include.orig/stm32f412vx.h	2023-11-08 11:17:42
++++ Include/stm32f412vx.h	2024-01-09 15:17:51
+@@ -158,7 +158,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f412zx.h Include/stm32f412zx.h
+--- Include.orig/stm32f412zx.h	2023-11-08 11:17:42
++++ Include/stm32f412zx.h	2024-01-09 15:17:51
+@@ -158,7 +158,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f413xx.h Include/stm32f413xx.h
+--- Include.orig/stm32f413xx.h	2023-11-08 11:17:42
++++ Include/stm32f413xx.h	2024-01-09 15:17:51
+@@ -174,7 +174,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f415xx.h Include/stm32f415xx.h
+--- Include.orig/stm32f415xx.h	2023-11-08 11:17:42
++++ Include/stm32f415xx.h	2024-01-09 15:17:51
+@@ -159,7 +159,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f417xx.h Include/stm32f417xx.h
+--- Include.orig/stm32f417xx.h	2023-11-08 11:17:42
++++ Include/stm32f417xx.h	2024-01-09 15:17:51
+@@ -162,7 +162,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f423xx.h Include/stm32f423xx.h
+--- Include.orig/stm32f423xx.h	2023-11-08 11:17:42
++++ Include/stm32f423xx.h	2024-01-09 15:17:51
+@@ -175,7 +175,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f427xx.h Include/stm32f427xx.h
+--- Include.orig/stm32f427xx.h	2023-11-08 11:17:42
++++ Include/stm32f427xx.h	2024-01-09 15:17:51
+@@ -168,7 +168,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f429xx.h Include/stm32f429xx.h
+--- Include.orig/stm32f429xx.h	2023-11-08 11:17:42
++++ Include/stm32f429xx.h	2024-01-09 15:17:51
+@@ -170,7 +170,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f437xx.h Include/stm32f437xx.h
+--- Include.orig/stm32f437xx.h	2023-11-08 11:17:42
++++ Include/stm32f437xx.h	2024-01-09 15:17:51
+@@ -169,7 +169,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f439xx.h Include/stm32f439xx.h
+--- Include.orig/stm32f439xx.h	2023-11-08 11:17:42
++++ Include/stm32f439xx.h	2024-01-09 15:17:51
+@@ -171,7 +171,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f446xx.h Include/stm32f446xx.h
+--- Include.orig/stm32f446xx.h	2023-11-08 11:17:42
++++ Include/stm32f446xx.h	2024-01-09 15:17:51
+@@ -166,7 +166,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f469xx.h Include/stm32f469xx.h
+--- Include.orig/stm32f469xx.h	2023-11-08 11:17:42
++++ Include/stm32f469xx.h	2024-01-09 15:17:51
+@@ -172,7 +172,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
+diff -Naur Include.orig/stm32f479xx.h Include/stm32f479xx.h
+--- Include.orig/stm32f479xx.h	2023-11-08 11:17:42
++++ Include/stm32f479xx.h	2024-01-09 15:17:51
+@@ -173,7 +173,7 @@
+   * @}
+   */
+ 
+-#include "core_cm4.h"             /* Cortex-M4 processor and core peripherals */
++#include <CMSIS/Include/core_cm4.h>             /* Cortex-M4 processor and core peripherals */
+ #include "system_stm32f4xx.h"
+ #include <stdint.h>
+ 
