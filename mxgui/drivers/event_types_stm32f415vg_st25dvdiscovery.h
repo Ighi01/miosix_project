@@ -26,10 +26,10 @@
  *   along with this program; if not, see <http://www.gnu.org/licenses/>   *
  ***************************************************************************/
 
-#ifndef EVENT_TYPES_STM32F4DISCOVERY_H
-#define	EVENT_TYPES_STM32F4DISCOVERY_H
+#ifndef EVENT_TYPES_STM32F415VG_ST25DVDISCOVERY_H
+#define	EVENT_TYPES_STM32F415VG_ST25DVDISCOVERY_H
 
-#ifdef _BOARD_STM32F429ZI_STM32F4DISCOVERY
+#ifdef _BOARD_STM32F415VG_ST25DVDISCOVERY
 
 class EventType
 {
