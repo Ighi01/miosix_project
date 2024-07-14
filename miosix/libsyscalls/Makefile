@@ -4,7 +4,7 @@
 ##
 
 ## KPATH and CONFPATH should be forwarded by the parent makefile
-MAKEFILE_VERSION := 1.14
+MAKEFILE_VERSION := 1.15
 include Makefile.pcommon
 
 SRC := crt0.s crt1.cpp memoryprofiling.cpp
@@ -19,6 +19,6 @@ all: $(OBJ)
 	$(Q)$(AR) rcs libsyscalls.a $(OBJ)
 
 clean:
-	-rm -f $(OBJ) $(OBJ:.o=.d) libsyscalls.a
+	$(Q)rm -f $(OBJ) $(OBJ:.o=.d) libsyscalls.a
 
 -include $(OBJ:.o=.d)

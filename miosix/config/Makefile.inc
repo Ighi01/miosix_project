@@ -842,7 +842,7 @@ endif
 ## a new board or porting Miosix to a new architecture                    ##
 ############################################################################
 
-ifneq ($(MAKEFILE_VERSION),1.14)
+ifneq ($(MAKEFILE_VERSION),1.15)
     $(info You are using an incompatible makefile. Make sure it matches \
       the one distributed with the current version of the kernel)
     $(error Error)
@@ -1501,8 +1501,10 @@ else ifeq ($(ARCH),cortexM3_stm32f1)
     arch/common/drivers/dcc.cpp                  \
     $(ARCH_INC)/interfaces-impl/portability.cpp  \
     $(ARCH_INC)/interfaces-impl/delays.cpp       \
+    $(ARCH_INC)/interfaces-impl/deep_sleep.cpp   \
     arch/common/drivers/stm32f1_gpio.cpp         \
     arch/common/core/stm32_16bit_os_timer.cpp    \
+    arch/common/core/stm32_rtc_os_timer.cpp      \
     arch/common/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c
 
 ##-----------------------------------------------------------------------------
@@ -3038,7 +3040,12 @@ else ifeq ($(ARCH),cortexM4_atsam4l)
         ## The command must provide a way to program the board, or print an
         ## error message saying that 'make program' is not supported for that
         ## board.
-        PROG ?= echo 'make program not supported.'
+        ## BUG: flashes ok but requires powercycle
+        PROG_BIN = $(if $(ROMFS_DIR),image.bin,main.bin)
+        PROG ?= openocd \
+                -f '$(KPATH)/$(BOARD_INC)/openocd.cfg' \
+                -c 'program $(PROG_BIN) 0x4000 reset'  \
+                -c shutdown
 
     ##-------------------------------------------------------------------------
     ## End of board list
@@ -3072,6 +3079,7 @@ else ifeq ($(ARCH),cortexM4_atsam4l)
     $(ARCH_INC)/drivers/lcd.cpp                              \
     $(ARCH_INC)/interfaces-impl/portability.cpp              \
     $(ARCH_INC)/interfaces-impl/os_timer.cpp                 \
+    $(ARCH_INC)/interfaces-impl/deep_sleep.cpp               \
     $(ARCH_INC)/interfaces-impl/gpio_impl.cpp                \
     $(ARCH_INC)/interfaces-impl/delays.cpp
     
@@ -3246,11 +3254,7 @@ else ifeq ($(ARCH),cortexM0plus_rp2040)
         ## The command must provide a way to program the board, or print an
         ## error message saying that 'make program' is not supported for that
         ## board.
-        PROG ?= echo 'make program not supported.'
-
-        ## Select UF2 binary image format
-        IMAGE_FORMAT := uf2
-        UF2FLAGS := -s 0x10000000 -f 0xe48bff56 -p
+        PROG ?= picotool load -x $(if $(ROMFS_DIR), image.bin, main.bin)
 
     ##-------------------------------------------------------------------------
     ## End of board list

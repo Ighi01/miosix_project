@@ -4,7 +4,7 @@
 ##
 
 ## KPATH and CONFPATH are forwarded by the parent Makefile
-MAKEFILE_VERSION := 1.14
+MAKEFILE_VERSION := 1.15
 include $(KPATH)/Makefile.kcommon
 
 ## List of all Miosix OS source files that have no special requirements
@@ -67,6 +67,6 @@ all: $(OBJ)
 	$(Q)$(AR) rcs libmiosix.a $(OBJ)
 
 clean:
-	-rm -f $(OBJ) $(OBJ:.o=.d) libmiosix.a
+	$(Q)rm -f $(OBJ) $(OBJ:.o=.d) libmiosix.a
 
 -include $(OBJ:.o=.d)

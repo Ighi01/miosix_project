@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2010-2021 by Terraneo Federico                          *
+ *   Copyright (C) 2024 by Terraneo Federico                               *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,37 +23,53 @@
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program; if not, see <http://www.gnu.org/licenses/>   *
- ***************************************************************************/
+ ***************************************************************************/ 
 
-#pragma once
+#include "miosix.h"
+#include "interfaces/deep_sleep.h"
 
-#include "interfaces/portability.h"
-#include "scheduler.h"
+#ifdef WITH_DEEP_SLEEP
+
+#ifndef WITH_RTC_AS_OS_TIMER
+#error For atsam4l target, WITH_DEEP_SLEEP requires WITH_RTC_AS_OS_TIMER
+#endif //WITH_RTC_AS_OS_TIMER
+
+using namespace std;
 
 namespace miosix {
 
-//This is a function that is part of the internal implementation of the kernel
-//and is defined in kernel.cpp. User code should not know about these nor try to use them.
-extern bool IRQwakeThreads(long long currentTime);///\internal Do not use outside the kernel
-
-/**
- * Performs thread wakeup and preemption in response to a scheduled timer
- * alarm interrupt.
- * \param currentTime time in nanoseconds when the timer interrupt fired.
- * \warning currentTime cannot be earlier than the last deadline actually
- * programmed by the kernel!
- */
-inline bool IRQtimerInterrupt(long long currentTime)
+void IRQdeepSleepInit() {}
+  
+bool IRQdeepSleep(long long int abstime)
 {
-    Thread::IRQstackOverflowCheck();
-    bool hptw = IRQwakeThreads(currentTime);
-    if(currentTime >= Scheduler::IRQgetNextPreemption() || hptw)
-    {
-        //End of the burst || a higher priority thread has woken up
-        Scheduler::IRQfindNextThread();//If the kernel is running, preempt
-        return false;
-    }
+    /*
+     * NOTE: The simplest way to support deep sleep is to use the RTC as the
+     * OS timer. By doing so, there is no need to set the RTC wakeup time
+     * whenever we enter deep sleep, as the scheduler already does, and there
+     * is also no need to resynchronize the OS timer to the RTC because the
+     * OS timer doesn't stop counting while we are in deep sleep.
+     * The only disadvantage on this platform is that the OS timer resolution is
+     * rather coarse, 1/16384Hz is ~61us, but this is good enough for many use
+     * cases.
+     *
+     * This is why this code ignores the wakeup absolute time parameter, and the
+     * only task is to write the proper sequence to enter the deep sleep state
+     * instead of the sleep state.
+     */
+    return IRQdeepSleep();
+}
+
+bool IRQdeepSleep()
+{
+    SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk; //Select wait mode
+    __WFI();
+    SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk; //Unselect wait mode
+    //The only core clock option we support is the internal RC oscillator and
+    //the atsam microcontroller preserve its configuration across deep sleep
+    //so there's no need to restore clocks upn wakeup
     return true;
 }
 
 } //namespace miosix
+
+#endif //WITH_DEEP_SLEEP

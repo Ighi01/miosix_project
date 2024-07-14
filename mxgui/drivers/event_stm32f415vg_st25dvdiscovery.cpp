@@ -58,7 +58,7 @@ void __attribute__((naked)) EXTI9_5_IRQHandler()
  */
 extern "C" void __attribute__((used)) EXTI9_5HandlerImpl()
 {
-    EXTI->PR = EXTI_PR_PR8;  // Assuming the touchscreen interrupt is on EXTI line 8
+    EXTI->PR = EXTI_PR_PR8; 
     touchIntSema.IRQsignal();
 }
 
@@ -233,72 +233,197 @@ public:
         }
     }
 
+    /**
+     * Set the specified pins to GPIO alternate function.
+     * @param gpioMask Mask specifying which pins need to be used as GPIO.
+     */
+    void initGPIO(uint8_t gpioMask)
+    {
+        writeReg(GPIO_ALT_FUNC, gpioMask);
+    }
+
+    /**
+     * Configure in/out direction of GPIO pins.
+     * @param outputMask Mask specifying which pins are set as output
+     * (all others are set as inputs).
+     */
+    void setGPIODir(unsigned char outputMask)
+    {
+        writeReg(GPIO_DIR, outputMask);
+    }
+
+    /**
+     * Get GPIO pin state
+     * @returns Bitmask with the state of each pin (1 for high, 0 for low)
+     */
+    unsigned char getGPIOState()
+    {
+        unsigned char res;
+        readReg(GPIO_MP_STA, 1, &res);
+        return res;
+    }
+
 private:
-    Point lastTouchPoint = Point(-1, -1);
+    Point lastTouchPoint = Point(-1,-1);
 };
+
+static STMPE811<ioExtI2C, 0x82> touchCtrl;
+static STMPE811<ioExtI2C, 0x88> joyCtrl;
+
+static Queue<Event,10> eventQueue;
+static std::function<void ()> eventCallback;
+
+static void callback(Event e)
+{
+    {
+        FastInterruptDisableLock dLock;
+        if(eventQueue.IRQput(e)==false) return;
+    }
+    if(eventCallback) eventCallback();
+}
+
+template <EventType::E Type>
+class ButtonState
+{
+public:
+    void update(bool newState)
+    {
+        if(newState)
+        {
+            if(lastState==false) callback(Event(Type,EventDirection::DOWN));
+            lastState=true;
+        } else {
+            if(lastState==true) callback(Event(Type,EventDirection::UP));
+            lastState=false;
+        }
+    }
+
+private:
+    bool lastState=false;
+};
+
+static void waitForTouchOrButton()
+{
+    long long t = miosix::getTime();
+    // Wait until the touchscreen interrupt fires or 20ms
+    if (!touchIntSema.reset()) touchIntSema.timedWait(t+20000000LL);
+    touchCtrl.writeReg(INT_STA,0x03);
+}
+
+static void eventThread(void *)
+{
+    ButtonState<EventType::ButtonA> aButton;
+    ButtonState<EventType::ButtonB> bButton;
+    ButtonState<EventType::ButtonC> cButton;
+    ButtonState<EventType::ButtonJoy> joyButton;
+    ButtonState<EventType::ButtonUp> upButton;
+    ButtonState<EventType::ButtonDown> downButton;
+    ButtonState<EventType::ButtonLeft> leftButton;
+    ButtonState<EventType::ButtonRight> rightButton;
+    bool tPrev=false;
+    Point pOld; 
+    for(;;)
+    {
+        waitForTouchOrButton();
+
+        //Check buttons
+        aButton.update(!buttonKey::value());
+        bButton.update(!buttonTamper::value());
+        cButton.update(buttonWakeup::value());
+        unsigned char extButtons=joyCtrl.getGPIOState();
+        joyButton.  update(!(extButtons & 0b10000000));
+        downButton. update(!(extButtons & 0b01000000));
+        leftButton. update(!(extButtons & 0b00100000));
+        rightButton.update(!(extButtons & 0b00010000));
+        upButton.   update(!(extButtons & 0b00001000));
+
+        //Check touchscreen
+        Point p=touchCtrl.getTouchData();
+        if(p.x()>=0) //Is someone touching the screen?
+        {
+            //Ok, someone is touching the screen
+            //Did the touch point differ that much from the previous?
+            if(abs(pOld.x()-p.x())>0 || abs(pOld.y()-p.y())>0 || !tPrev)
+            {
+                pOld=p;
+                if(tPrev==false)
+                    callback(Event(EventType::TouchDown,pOld,EventDirection::DOWN));
+                else callback(Event(EventType::TouchMove,pOld,EventDirection::DOWN));
+            }  
+            tPrev=true;
+        } else {
+            //No, no one is touching the screen
+            if(tPrev==true)
+            {
+                touchCtrl.touchFifoClear();
+                callback(Event(EventType::TouchUp,pOld,EventDirection::UP));
+            }
+            tPrev=false;
+        }
+    }
+}
 
 //
 // class InputHandlerImpl
 //
 
-class InputHandlerImpl : public InputHandler
-{
-public:
-    InputHandlerImpl();
-
-    /**
-     * \return the currently pressed key
-     */
-    InputEvent getEvent();
-};
-
 InputHandlerImpl::InputHandlerImpl()
 {
-    buttonKey::mode(Mode::INPUT);
-    buttonTamper::mode(Mode::INPUT);
-    buttonWakeup::mode(Mode::INPUT);
-    scl::mode(Mode::ALTERNATE);
-    scl::alternateFunction(4);
-    sda::mode(Mode::ALTERNATE);
-    sda::alternateFunction(4);
-    interrupt::mode(Mode::INPUT);
+    {
+        FastInterruptDisableLock dLock;
+        buttonKey::mode(Mode::INPUT);
+        buttonTamper::mode(Mode::INPUT);
+        buttonWakeup::mode(Mode::INPUT);
+        interrupt::mode(Mode::INPUT);
+        ioExtI2C::init();
+    }
+    
+    // Init the touchscreen controller
+    touchCtrl.init();
+    touchCtrl.initTouch();
 
+    // Init the second STMPE811 which is just used for more buttons. (bother!)
+    joyCtrl.init();
+    joyCtrl.setGPIODir(0b00000000); // everything as input
+    joyCtrl.initGPIO(0b11111000);
+   
+    // Turn on SYSCFG peripheral
     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
-    SYSCFG->EXTICR[2] = SYSCFG_EXTICR3_EXTI8_PI;
-    EXTI->IMR |= EXTI_IMR_MR8;
-    EXTI->EMR |= EXTI_EMR_MR8;
-    EXTI->RTSR |= EXTI_RTSR_TR8;
-    NVIC_EnableIRQ(EXTI9_5_IRQn);
+    RCC_SYNC();
 
-    // Disable I2C to avoid problems with stmpe811 initialization
-    RCC->APB1RSTR |= RCC_APB1RSTR_I2C1RST;
-    RCC->APB1RSTR &= ~RCC_APB1RSTR_I2C1RST;
-    // Enable clock to I2C
-    RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
+    // Configure touchscreen interrupt
+    SYSCFG->EXTICR[0] = (SYSCFG->EXTICR[0] & ~SYSCFG_EXTICR1_EXTI2_Msk) | (8 << SYSCFG_EXTICR1_EXTI2_Pos);
+    EXTI->IMR |= EXTI_IMR_MR2;
+    EXTI->FTSR |= EXTI_FTSR_TR2;
+    NVIC_EnableIRQ(EXTI2_IRQn);
+    NVIC_SetPriority(EXTI2_IRQn,15); //Low priority
 
-    // Initialize the touchscreen controller
-    static STMPE811<ioExtI2C, 0x82> touchscreen;
-    touchscreen.init();
-    touchscreen.initTouch();
+    //Note that this class is instantiated only once. Otherwise
+    //we'd have to think a way to avoid creating multiple threads
+    Thread::create(eventThread,STACK_MIN);
 }
 
-/**
- * Polls the state of the keyboard
- */
-InputEvent InputHandlerImpl::getEvent()
+Event InputHandlerImpl::getEvent()
 {
-    // Map of buttons
-    if (buttonKey::value() == 0) return InputEvent::KeyboardEvent('A', true);
-    if (buttonTamper::value() == 0) return InputEvent::KeyboardEvent('B', true);
-    if (buttonWakeup::value() == 0) return InputEvent::KeyboardEvent('C', true);
-
-    // Map of the touchscreen
-    touchIntSema.wait();
-    auto touch = touchscreen.getTouchData();
-    if (touch == Point(-1, -1)) return InputEvent();
-    return InputEvent::TouchEvent(touch);
+    Event result;
+    eventQueue.get(result);
+    return result;
 }
 
-} // namespace mxgui
+Event InputHandlerImpl::popEvent()
+{
+    FastInterruptDisableLock dLock;
+    Event result;
+    if(eventQueue.isEmpty()==false) eventQueue.IRQget(result);
+    return result;
+}
+
+function<void ()> InputHandlerImpl::registerEventCallback(function<void ()> cb)
+{
+    swap(eventCallback,cb);
+    return cb;
+}
+
+} //namespace mxgui
 
 #endif // _BOARD_STM32F415VG_ST25DVDISCOVERY

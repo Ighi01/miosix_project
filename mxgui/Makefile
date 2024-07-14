@@ -2,9 +2,8 @@
 ## Makefile for mxgui
 ## This makefile builds libmxgui.a
 ##
-
 ## KPATH and CONFPATH are forwarded by the parent Makefile
-MAKEFILE_VERSION := 1.14
+MAKEFILE_VERSION := 1.15
 include $(KPATH)/Makefile.kcommon
 
 ## List of all mxgui source files (both .c and .cpp)
@@ -49,8 +48,9 @@ drivers/display_stm3220g-eval.cpp      \
 drivers/event_stm3220g-eval.cpp        \
 drivers/event_stm32f415vg_st25dvdiscovery.cpp
 
-CFLAGS   += -DMXGUI_LIBRARY
+CFLAGS += -DMXGUI_LIBRARY
 CXXFLAGS += -DMXGUI_LIBRARY
+
 
 all: $(OBJ)
 	$(ECHO) "[AR  ] libmxgui.a"

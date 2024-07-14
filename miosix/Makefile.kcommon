@@ -16,42 +16,27 @@ include $(CONFPATH)/config/Makefile.inc
 
 ## Includes the miosix base directory for C/C++
 ## Always include CONFPATH first, as it overrides the config file location
-DFLAGS   := -MMD -MP
 AFLAGS   ?= $(AFLAGS_BASE)
 CFLAGS   ?= $(CFLAGS_BASE)   -I$(CONFPATH) -I$(CONFPATH)/config/$(BOARD_INC)  \
             -I. -I$(KPATH) -I$(KPATH)/arch/common -I$(KPATH)/$(ARCH_INC)      \
-            -I$(KPATH)/$(BOARD_INC) $(INCLUDE_DIRS)
+            -I$(KPATH)/$(BOARD_INC) $(INCLUDE_DIRS) -MMD -MP
 CXXFLAGS ?= $(CXXFLAGS_BASE) -I$(CONFPATH) -I$(CONFPATH)/config/$(BOARD_INC)  \
             -I. -I$(KPATH) -I$(KPATH)/arch/common -I$(KPATH)/$(ARCH_INC)      \
-            -I$(KPATH)/$(BOARD_INC) $(INCLUDE_DIRS)
+            -I$(KPATH)/$(BOARD_INC) $(INCLUDE_DIRS) -MMD -MP
 LFLAGS   ?= $(LFLAGS_BASE)
 STDLIBS  := -lmiosix -lstdc++ -lc -lm -lgcc -latomic
 LINK_LIBS ?= $(LIBS) -L$(KPATH) -Wl,--start-group $(STDLIBS) -Wl,--end-group
+TOOLS_DIR := $(KPATH)/_tools
 
 OBJ ?= $(addsuffix .o, $(basename $(SRC)))
 
-IMAGE_FORMAT ?= bin
-
 SUBDIRS := $(KPATH)
-ifneq ($(POSTLD),)
-	SUBDIRS += $(KPATH)/libsyscalls
-endif
-
-TOOLS_DIR := $(KPATH)/_tools
+# Not adding libsyscalls to SUBDIRS because it has to be built before
+LIBSYS  := $(KPATH)/libsyscalls
 
 .DEFAULT_GOAL := all
 
-program:
-	$(PROG)
-
-image: image.bin
-
-ifeq ($(IMAGE_FORMAT),uf2)
-image: image.uf2
-main: main.uf2
-endif
-
-image.bin: main.bin $(TOOLS_DIR)/filesystems/buildromfs
+image: main $(TOOLS_DIR)/filesystems/buildromfs
 	$(ECHO) "[FS  ] romfs.bin"
 	$(Q)./$(TOOLS_DIR)/filesystems/buildromfs romfs.bin \
 	  --from-directory $(ROMFS_DIR)
@@ -64,47 +49,40 @@ $(TOOLS_DIR)/filesystems/buildromfs:
 	$(Q)cd $(TOOLS_DIR)/filesystems/build         \
 	  && cmake --log-level=ERROR .. && $(MAKE) -s
 
-$(TOOLS_DIR)/bin2uf2/bin2uf2:
-	$(ECHO) "[HOST] bin2uf2"
-	$(Q)mkdir -p $(TOOLS_DIR)/bin2uf2/build
-	$(Q)cd $(TOOLS_DIR)/bin2uf2/build             \
-	  && cmake --log-level=ERROR .. && $(MAKE) -s
-
-all-recursive:
-	$(foreach i,$(SUBDIRS),$(MAKE) -C $(i)                               \
-	  KPATH=$(shell perl $(KPATH)/_tools/relpath.pl $(i) $(KPATH))       \
-	  CONFPATH=$(shell perl $(KPATH)/_tools/relpath.pl $(i) $(CONFPATH)) \
+all-recursive: $(if $(POSTLD), $(LIBSYS)/libsyscalls.a)
+	$(foreach i,$(SUBDIRS),$(MAKE) -C $(i)                                 \
+	  KPATH=$(shell perl $(TOOLS_DIR)/relpath.pl $(i) $(KPATH))            \
+	  CONFPATH=$(shell perl $(TOOLS_DIR)/relpath.pl $(i) $(CONFPATH))      \
 	  || exit 1;)
 
+$(LIBSYS)/libsyscalls.a:
+	$(Q)$(MAKE) -C $(LIBSYS)                                               \
+	KPATH=$(shell perl $(TOOLS_DIR)/relpath.pl $(LIBSYS) $(KPATH))         \
+	CONFPATH=$(shell perl $(TOOLS_DIR)/relpath.pl $(LIBSYS) $(CONFPATH))   \
+	|| exit 1;
+
 clean-recursive:
-	$(foreach i,$(SUBDIRS),$(MAKE) -C $(i)                               \
-	  KPATH=$(shell perl $(KPATH)/_tools/relpath.pl $(i) $(KPATH))       \
-	  CONFPATH=$(shell perl $(KPATH)/_tools/relpath.pl $(i) $(CONFPATH)) \
+	$(foreach i,$(SUBDIRS),$(MAKE) -C $(i)                                 \
+	  KPATH=$(shell perl $(TOOLS_DIR)/relpath.pl $(i) $(KPATH))            \
+	  CONFPATH=$(shell perl $(TOOLS_DIR)/relpath.pl $(i) $(CONFPATH))      \
 	  clean || exit 1;)
-	-rm -f image.bin romfs.bin $(TOOLS_DIR)/filesystems/buildromfs
-	-rm -rf $(TOOLS_DIR)/filesystems/build
-	-rm -f main.uf2 image.uf2 $(TOOLS_DIR)/bin2uf2/bin2uf2
-	-rm -rf $(TOOLS_DIR)/bin2uf2/build
+	$(Q)$(MAKE) -C $(LIBSYS)                                               \
+	KPATH=$(shell perl $(TOOLS_DIR)/relpath.pl $(LIBSYS) $(KPATH))         \
+	CONFPATH=$(shell perl $(TOOLS_DIR)/relpath.pl $(LIBSYS) $(CONFPATH))   \
+	clean || exit 1;
+	$(Q)rm -f image.bin romfs.bin $(TOOLS_DIR)/filesystems/buildromfs
+	$(Q)rm -rf $(TOOLS_DIR)/filesystems/build
 
-%.uf2: %.bin $(TOOLS_DIR)/bin2uf2/bin2uf2
-	$(ECHO) '[UF2 ] $@'
-	$(Q)./$(TOOLS_DIR)/bin2uf2/bin2uf2 $(UF2FLAGS) $< -o $@
-
-%.hex: %.elf
-	$(ECHO) '[CP  ] $@'
-	$(Q)$(CP) -O ihex $< $@
-
-%.bin: %.elf
-	$(ECHO) '[CP  ] $@'
-	$(Q)$(CP) -O binary $< $@
+program:
+	$(PROG)
 
 %.o : %.cpp
 	$(ECHO) "[CXX ] $<"
-	$(Q)$(CXX) $(DFLAGS) $(CXXFLAGS) $< -o $@
+	$(Q)$(CXX) $(CXXFLAGS) $< -o $@
 
 %.o : %.c
 	$(ECHO) "[CC  ] $<"
-	$(Q)$(CC)  $(DFLAGS) $(CFLAGS) $< -o $@
+	$(Q)$(CC)  $(CFLAGS) $< -o $@
 
 %.o: %.s
 	$(ECHO) "[AS  ] $<"

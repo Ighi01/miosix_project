@@ -36,7 +36,7 @@ using namespace std;
 using namespace mxgui;
 
 ENTRY()
-{
+{ 
     Display& display=DisplayManager::instance().getDisplay();
     unsigned short maxX = display.getWidth()-1;
     unsigned short maxY = display.getHeight()-1;

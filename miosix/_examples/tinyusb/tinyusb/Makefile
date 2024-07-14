@@ -4,7 +4,7 @@
 ##
 
 ## KPATH and CONFPATH are forwarded by the parent Makefile
-MAKEFILE_VERSION := 1.14
+MAKEFILE_VERSION := 1.15
 include $(KPATH)/Makefile.kcommon
 
 ## List of all tinyusb source files (both .c and .cpp)
@@ -90,6 +90,6 @@ clean:
 # without becoming crazy
 %.o : %.c
 	$(ECHO) "[CXX ] $<"
-	$(Q)$(CXX) $(DFLAGS) $(CXXFLAGS) $< -o $@
+	$(Q)$(CXX) $(CXXFLAGS) $< -o $@
 
 -include $(OBJ:.o=.d)
