@@ -196,8 +196,7 @@ public:
             // No touch
             lastTouchPoint = Point(-1, -1);
             return lastTouchPoint;
-        }
-        else
+        }else
         {
             // Touch detected, check if there are samples in FIFO.
             // Even if a touch is detected, the FIFO may be empty if:
@@ -218,7 +217,7 @@ public:
             touchFifoClear();
             int x = static_cast<int>(tsData[0]) << 4 | tsData[1] >> 4;
             int y = ((static_cast<int>(tsData[1]) & 0xf) << 8) | tsData[2];
-            y = 4095 - y; // Y is swapped
+            y = 4095-y; // Y is swapped
 
             // Apply calibration. Values may vary from unit to unit
             const int xMin = 220;
@@ -227,8 +226,21 @@ public:
             const int yMax = 3900;
             x = (x - xMin) * 240 / (xMax - xMin);
             y = (y - yMin) * 320 / (yMax - yMin);
+            x=min(239,max(0,x));
+            y=min(319,max(0,y));
+            
+            #if defined(MXGUI_ORIENTATION_VERTICAL)
+            lastTouchPoint=Point(x,y);
+            #elif defined(MXGUI_ORIENTATION_HORIZONTAL)
+            lastTouchPoint=Point(319-y,x);
+            #elif defined(MXGUI_ORIENTATION_VERTICAL_MIRRORED)
+            lastTouchPoint=Point(239-x,319-y);
+            #elif defined(MXGUI_ORIENTATION_HORIZONTAL_MIRRORED)
+            lastTouchPoint=Point(y,239-x);
+            #else
+            #error unknown orientation
+            #endif
 
-            lastTouchPoint = Point(x, y);
             return lastTouchPoint;
         }
     }
